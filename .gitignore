@@ -1,0 +1,8 @@
+#Files
+Pipfile.lock
+Pipfile
+requirements.txt
+
+#Directories
+.idea/
+__pycache__/
