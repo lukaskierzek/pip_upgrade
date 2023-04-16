@@ -1,47 +1,76 @@
 import os
+from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
+from typing import Any
 
 
-class Pip:
-    @staticmethod
-    def create_requirements() -> None:
+class PipCommand(ABC):
+    @abstractmethod
+    def command(self) -> Any:
+        pass
+
+
+class File(ABC):
+    @abstractmethod
+    def replacing_data(self) -> Any:
+        pass
+
+
+class Message(ABC):
+    @abstractmethod
+    def message(self) -> None:
+        pass
+
+
+class PipCreateRequirements(PipCommand):
+    def command(self) -> None:
         os.system('pip freeze > requirements.txt')
 
-    @staticmethod
-    def update_pip() -> None:
+
+class PipInstallRequirements(PipCommand):
+    def command(self) -> None:
         os.system('pip install -r requirements.txt')
 
 
-class Requirements:
-    @staticmethod
-    def replace_eq_to_ge() -> str:
+class RequirementsEqToGe(File):
+    def replacing_data(self) -> str:
         with open(r'requirements.txt', "r") as file:
-            data = file.read()
-            data = data.replace("==", ">=")
+            data = file.read().replace("==", ">=")
         return data
 
-    @staticmethod
-    def write_replace_eq_to_ge_into_requirement(data: str) -> None:
+
+@dataclass
+class MessagePrint(Message):
+    communication: str = field()
+
+    def message(self) -> None:
+        print(self.communication)
+
+
+@dataclass
+class RequirementsNewData(File):
+    data: str = field()
+
+    def replacing_data(self) -> None:
         with open(r'requirements.txt', 'w') as file:
-            file.write(data)
+            file.write(self.data)
 
 
-def main():
+def main() -> None:
     try:
-        pip = Pip()
-        requirements = Requirements()
+        MessagePrint("Create requirements.txt file...").message()
+        PipCreateRequirements().command()
 
-        print("Create requirements.txt file...")
-        pip.create_requirements()
+        MessagePrint("Read libs and replace '==' to '>='...").message()
+        requirement_replace_qeq_to_ge = RequirementsEqToGe().replacing_data()
+        RequirementsNewData(requirement_replace_qeq_to_ge).replacing_data()
 
-        print("Read libs and replace '==' to '>='...")
-        requirements.write_replace_eq_to_ge_into_requirement(requirements.replace_eq_to_ge())
+        MessagePrint("Update libs...").message()
+        PipInstallRequirements().command()
 
-        print("Update libs...")
-        pip.update_pip()
-
-        print("Done!")
+        MessagePrint("Done!").message()
     except FileNotFoundError as e:
-        print(f"requirements.txt not found :( \n{e}")
+        MessagePrint(f"requirements.txt not found :( \n{e}").message()
 
 
 if __name__ == '__main__':
